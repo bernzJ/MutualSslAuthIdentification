@@ -8,7 +8,7 @@ class MySQLHandler {
     // This callback getter will be wrapped inside a promise.
     initializeConnection(conf) {
         return new Promise((resolve, reject) => {
-            function addDisconnectHandler(conn) {
+            let addDisconnectHandler = (conn) => {
                 conn.on("error", function(error) {
                     if (error instanceof Error) {
                         if (error.code === "PROTOCOL_CONNECTION_LOST") {
@@ -20,7 +20,7 @@ class MySQLHandler {
                         }
                     }
                 });
-            }
+            };
             if (_connection != null && _connection.state == 'authenticated') resolve(conn);
             let conn = mysql.createConnection(conf);
             addDisconnectHandler(conn);
