@@ -1,25 +1,11 @@
-"use strict";
-// Const declarations
-const mysql = require('mysql');
+'use strict';
+import mysql from 'mysql';
+import { _config } from './db_config.js'
+//const mysql = require('mysql');
 // this variable can change
-var _config = null;
 var _connection = null;
 // Our main class object
-class MySQL {
-    // Setters
-    set setMySQL_config(value) {
-        _config = value;
-    }
-    set setMySQL_connection(value) {
-        _connection = value;
-    }
-    // Getters
-    get getMySQL_connection() {
-        return _connection;
-    }
-    get getMySQL_config() {
-        return _config;
-    }
+class MySQLHandler {
     // This callback getter will be wrapped inside a promise.
     initializeConnection(conf) {
         return new Promise((resolve, reject) => {
@@ -36,18 +22,18 @@ class MySQL {
                     }
                 });
             }
+            if(_connection != null && _connection.state == 'authenticated') resolve(conn);
             let conn = mysql.createConnection(conf);
-
-            // Add handlers.
             addDisconnectHandler(conn);
-
-            conn.connect();
-            resolve(conn);
+            conn.connect(function(error){
+                if (error) reject(error);
+                resolve(conn);
+            });
+            
         });
     }
-    // Construct the listener for our ssl socket
-    constructor(config) {
-        this.setMySQL_config = config;
+    constructor() {
+        //unused
     }
     changeDatabase(db) {
         return new Promise((resolve, reject) => {
@@ -62,31 +48,21 @@ class MySQL {
     }
     // Querying sql
     query(sql, params, db) {
-        if (this.getMySQL_connection == null) {
-            return this.initializeConnection(this.getMySQL_config).then((connObj) => {
-                this.setMySQL_connection = connObj;
-                let conn = this.getMySQL_connection;
-                return new Promise((resolve, reject) => {
-                    conn.query(sql, params, function(error, rows, fields) {
-                        if (error) {
-                            return reject(error);
-                        }
-                        resolve(rows);
-                    });
-                });
-            });
-        } else {
-            let conn = this.getMySQL_connection;
+        let _query = () => {
             return new Promise((resolve, reject) => {
-                conn.query(sql, params, function(error, rows, fields) {
+                _connection.query(sql, params, function(error, rows, fields) {
                     if (error) {
                         return reject(error);
                     }
                     resolve(rows);
                 });
             });
-        }
+        };
+        return this.initializeConnection(_config).then((conn) => {
+            _connection = conn;
+        }).then(_query).catch(error => { console.log(error); });
+        
     }
 }
 
-module.exports = MySQL;
+export { MySQLHandler };
