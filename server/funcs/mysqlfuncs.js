@@ -58,10 +58,7 @@ class MySQLHandler {
         };
         return this.initializeConnection(_config).then((conn) => {
             _connection = conn;
-            console.log('should not be null');
-        }).then(_query).catch(error => {
-            console.log(error);
-        });
+        }).then(_query);
 
     }
 }
