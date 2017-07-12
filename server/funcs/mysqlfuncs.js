@@ -1,7 +1,6 @@
 'use strict';
 import mysql from 'mysql';
 import { _config } from './db_config.js'
-//const mysql = require('mysql');
 // this variable can change
 var _connection = null;
 // Our main class object
@@ -22,14 +21,14 @@ class MySQLHandler {
                     }
                 });
             }
-            if(_connection != null && _connection.state == 'authenticated') resolve(conn);
+            if (_connection != null && _connection.state == 'authenticated') resolve(conn);
             let conn = mysql.createConnection(conf);
             addDisconnectHandler(conn);
-            conn.connect(function(error){
+            conn.connect(function(error) {
                 if (error) reject(error);
                 resolve(conn);
             });
-            
+
         });
     }
     constructor() {
@@ -37,8 +36,7 @@ class MySQLHandler {
     }
     changeDatabase(db) {
         return new Promise((resolve, reject) => {
-            let conn = this.getMySQL_connection;
-            conn.changeUser({
+            _connection.changeUser({
                 database: db
             }, function(error) {
                 if (error) reject(error);
@@ -60,8 +58,11 @@ class MySQLHandler {
         };
         return this.initializeConnection(_config).then((conn) => {
             _connection = conn;
-        }).then(_query).catch(error => { console.log(error); });
-        
+            console.log('should not be null');
+        }).then(_query).catch(error => {
+            console.log(error);
+        });
+
     }
 }
 
